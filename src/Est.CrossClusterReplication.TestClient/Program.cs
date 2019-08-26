@@ -31,18 +31,18 @@ namespace Est.CrossClusterReplication.TestClient
                 }), ReplicaSettings.Default());
             service.Start().Wait();
             Log.Info("Replica Service started");
-            TestReplicaForSampleEvent(connSettings, destination, "test", "ReplicaTested");
+            TestReplicaForSampleEvent(connSettings,origin, destination, "test", "ReplicaTested");
             Log.Info("Press enter to exit the program");
             Console.ReadLine();
         }
 
-        private static void TestReplicaForSampleEvent(ConnectionSettings connSettings, IConnectionBuilder connBuilder, string stream, string eventType)
+        private static void TestReplicaForSampleEvent(ConnectionSettings connSettings, IConnectionBuilder origin, IConnectionBuilder destination, string stream, string eventType)
         {
             var senderForTestEvents = new ConnectionBuilder(new Uri("tcp://localhost:1112"), connSettings, "sender");
             var guidOnOrigin = AppendEvent("{name:'for test...'}", stream, eventType, senderForTestEvents);
             Log.Info($"the id saved on the origin database is {guidOnOrigin}");
             Thread.Sleep(3000);
-            var guidOnDestination = ReadLastEventId(stream, connBuilder);
+            var guidOnDestination = ReadLastEventId(stream, destination);
             Log.Info($"the last replicated id on the destination database is {guidOnDestination}");
             if (guidOnDestination.Equals(guidOnOrigin))
                 Log.Info("The test event has been replicated correctly!");

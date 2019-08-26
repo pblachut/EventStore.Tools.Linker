@@ -1,14 +1,13 @@
-using Est.CrossClusterReplication;
-using EventStore.ClientAPI;
+﻿using EventStore.ClientAPI;
 using Moq;
 using NUnit.Framework;
 
-namespace Est.Tests
+namespace Est.CrossClusterReplication.Tests
 {
     public class ReplicaServiceTests
     {
         [Test]
-        public void Replica_start_without_errors()
+        public void given_replicaservice_is_created_when_started_then_no_errors_expected()
         {
             // Set up
             var originBuilder = new Mock<IConnectionBuilder>();
