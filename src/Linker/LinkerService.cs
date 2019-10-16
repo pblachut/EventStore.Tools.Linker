@@ -246,9 +246,14 @@ namespace Linker
 
         private void Subscribe(Position position)
         {
+            _logger.Debug("Subscribing from position {position} current subscription name {subscriptionName}",
+                position, _allCatchUpSubscription?.SubscriptionName ?? "null");
+
             _allCatchUpSubscription = _originConnection.SubscribeToAllFrom(position,
                 BuildSubscriptionSettings(), EventAppeared, LiveProcessingStarted, SubscriptionDropped);
-            _logger.Debug($"Subscribed from position: {position}");
+            
+            _logger.Debug("Subscribed from position: {position} subscription name {subscriptionName}",
+                position, _allCatchUpSubscription?.SubscriptionName);
         }
 
         private void SubscriptionDropped(EventStoreCatchUpSubscription eventStoreCatchUpSubscription, SubscriptionDropReason subscriptionDropReason, Exception arg3)
@@ -269,7 +274,7 @@ namespace Linker
         private CatchUpSubscriptionSettings BuildSubscriptionSettings()
         {
             return new CatchUpSubscriptionSettings(_perfTunedSettings.MaxLiveQueue, _perfTunedSettings.ReadBatchSize,
-                CatchUpSubscriptionSettings.Default.VerboseLogging, _resolveLinkTos);
+                CatchUpSubscriptionSettings.Default.VerboseLogging, _resolveLinkTos, $"LinkerSubscription-{Guid.NewGuid()}");
         }
 
         private void LiveProcessingStarted(EventStoreCatchUpSubscription eventStoreCatchUpSubscription)
@@ -281,6 +286,9 @@ namespace Linker
         {
             try
             {
+                _logger.Debug("Event {eventId} appeared from subscription {subscriptionName}",
+                    resolvedEvent.Event?.EventId, eventStoreCatchUpSubscription?.SubscriptionName);
+
                 if (resolvedEvent.Event == null || !resolvedEvent.OriginalPosition.HasValue)
                     return Task.CompletedTask;
                 return EventAppeared(new BufferedEvent(resolvedEvent.Event.EventStreamId,
